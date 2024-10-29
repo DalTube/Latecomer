@@ -20,12 +20,18 @@
       } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
       import { getDocs } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
-      const firebaseConfig = {
-        // 본인 내용으로 채우기
-      };
+    const firebaseConfig = {
+    apiKey: "AIzaSyB2tG0j1iQIA2Zii5-Sv50lFlJwPN7ZMRk",
+    authDomain: "sparta-5a89e.firebaseapp.com",
+    projectId: "sparta-5a89e",
+    storageBucket: "sparta-5a89e.appspot.com",
+    messagingSenderId: "375925744397",
+    appId: "1:375925744397:web:d7e3037ef54e7ccd070644",
+    measurementId: "G-KT9Q0GGB5G"
+    };
       // Firebase 인스턴스 초기화
-      //const app = initializeApp(firebaseConfig);
-      //const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
       $('#home_Btn').click(async function () {
         //메인 메뉴
@@ -48,6 +54,7 @@
         let mailBox_Html = `<div>여기에 hstml</div>`;
         $('.bottom_St').append(mailBox_Html);
       });
+
       $('#dust_Btn').click(async function () {
         //미세먼지
         console.log('4');
