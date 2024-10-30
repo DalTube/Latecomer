@@ -13,17 +13,16 @@
     rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
     crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- css 공통 -->
     <link rel="stylesheet" href="./css/common.css" />
-
+    
     <!-- FireStore(FireBase) -->
     <script type="module">
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -44,7 +43,6 @@
         //멤버 정보 가져오기
         let docs = await getDocs(collection(db, "member"));
         docs.forEach((doc) => {
-            console.log(doc);
             let row = doc.data();
             let name = row['name'];
             let image = row['image'];
@@ -56,22 +54,83 @@
 
             let temp_html = `
             <div class="col">
-                <div id="memberCard" class="card h-100" onclick="imageClick(this)">
-                    <img src="${image}" class="card-img-top" alt="...">
+                <div id="memberCard" class="card h-100">
+                    <img src="${image}" class="card-img-top cardImg" alt="...">
                     <div class="card-body">
-                        <h5 id="memeberName" class="card-title">${name}</span></h5>
+                        <h5 class="card-title">${name}</h5>
                     </div>
                 </div>
             </div>`;
 
             $('#memberCards').append(temp_html);
         });
-    </script>
-    <script>
-        function imageClick(e){
+
+        let addImgUrl = "https://cdn-icons-png.flaticon.com/512/14365/14365813.png";
+        let add_html = `
+        <div class="col">
+            <div id="openAddMember" class="card h-100">
+                <img src=${addImgUrl} class="card-img-top" style="padding-top: 60px;" alt="...">
+                <div class="card-body">
+                    <h5 id="memeberName" class="card-title">합류</span></h5>
+                </div>
+            </div>
+        </div>`;
+        $('#memberCards').append(add_html);
+
+        //개인 카드 클릭 이벤트
+        $("#memberCard").click(async function (event) {
+            console.log(event);
             let elem = document.getElementById('memeberName').getHTML();
+            console.log(elem);
             $("#popup").css('display','flex').hide().fadeIn();
-        }
+
+            const col = collection(db, 'member');
+            const q = await query(col, where('name', '==', elem));
+            const docs = await getDocs(q);
+            docs.forEach((doc) => {
+                let row = doc.data();
+                console.log(row);
+            });         
+        });
+
+        //멤버 추가 팝업 
+        $("#openAddMember").click(async function (event) {
+            $('#addMemberBox').toggle();
+            event.preventDefault();
+            $('html,body').animate({scrollTop:$('html').offset().top}, 0);
+            $('#name').focus();
+        });
+
+        //멤버 추가 팝업 닫기 
+        $("#closeMemberBox").click(async function () {
+            $('#addMemberBox').toggle();
+        });
+
+        //멤버 추가 팝업 등록
+        $("#saveMemberBox").click(async function () {
+
+            let name = $('#name').val();
+            let image = $('#image').val();
+            let mbti = $('#mbti').val();
+            let github = $('#github').val();
+            let blog = $('#blog').val();
+            let objective = $('#objective').val();
+            let determination = $('#determination').val();
+
+            let doc = {
+                'name': name,
+                'image': image,
+                'mbti': mbti,
+                'github': github,
+                'blog': blog,
+                'objective': objective,
+                'determination': determination,
+            };
+            await addDoc(collection(db, "member"), doc);
+            alert("후발주자에 오신 것을 환영합니다.");
+            window.location.reload();
+        });
+        
     </script>
     <style>
         .memberMain{
@@ -134,6 +193,33 @@
             height: 100%;
             object-fit: cover;
         }
+
+        .addMemberBox {
+            width: 500px;
+            margin: 50px auto 0px auto;
+            padding-top: 30px;
+            display: none;
+        }
+
+        .memberBoxBtn{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .memberBoxBtn > button{
+            margin-right: 5px;
+        }
+
+        .form-floating {
+            width: 500px;
+        }
+
+        .cardImg {
+            height:100%;
+            object-fit: cover; 
+        }
     </style>
 </head>
 <body>
@@ -177,9 +263,55 @@
   <!--Main layout-->
     <main>
         <div class="main">
+
+            <!-- 멤버 추가 입력하는 영역 -->
+            <div class="addMemberBox" id="addMemberBox">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="name"
+                            placeholder="이름">
+                        <label for="floatingInput">이름</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="image"
+                            placeholder="이미지">
+                        <label for="floatingInput">이미지</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="mbti"
+                            placeholder="MBTI">
+                        <label for="floatingInput">MBTI</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="github"
+                            placeholder="Github">
+                        <label for="floatingInput">Github</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="blog"
+                            placeholder="블로그">
+                        <label for="floatingInput">블로그</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="objective"
+                            placeholder="목표">
+                        <label for="floatingInput">목표</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="determination"
+                            placeholder="각오">
+                        <label for="floatingInput">각오</label>
+                    </div>
+                    <div class="memberBoxBtn">
+                        <button id="saveMemberBox" type="button"
+                            class="btn btn-dark">합류</button>
+                        <button id="closeMemberBox" type="button" class="btn btn-outline-dark">닫기</button>
+                    </div>
+            </div>
+
+            <!-- DB에서 데이터 가져와서 멤버 정보 출력 -->
             <div class="memberMain">
-                <div id="memberCards" class="row row-cols-1 row-cols-md-3 g-4">
-                    <!-- DB에서 데이터 가져와서 멤버 정보 출력 -->
+                <div id="memberCards" class="row row-cols-1 row-cols-md-4 g-4">
+                    <!-- append 처리 -->
                 </div>
             </div>
         </div>
@@ -192,8 +324,13 @@
                 <span class="head-title">Profile</span>
             </div> -->
             <div style="background-color: black; float: right; width: 100%; height: 35px; ">
-                <button type="button" class="btn-close" aria-label="Close"></button>
+                <!-- <button type="button" class="btn-close" aria-label="Close"></button> -->
+                <img src="img/closePopupButton.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
             </div>
+            <div data-bs-theme="dark">
+                <button type="button" class="btn-close" aria-label="Close"></button>
+                <button type="button" class="btn-close" disabled aria-label="Close"></button>
+              </div>
             <div class="body-titlebox" style="text-align: center; padding: 30px 0 0 0;">
                 <h1>Profile</h1>
             </div>
@@ -202,7 +339,7 @@
                     <img src="https://helpx.adobe.com/content/dam/help/en/photoshop/using/quick-actions/remove-background-before-qa1.png">
                 </div>
                 <div class="bodyContentBox2">
-                    <p>이름</p>
+                    <p>이름 <span></span></p>
                     <p>mbti</p>
                     <p>github</p>
                     <p>blog</p>
