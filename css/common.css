@@ -23,7 +23,6 @@ body {
   .sidebar {
     width: 100%;
   }
-  }
 }
 .sidebar .active {
   border-radius: 5px;
@@ -45,8 +44,6 @@ body {
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
-.list-group-item {
-  line-height: 3.5;
 .list-group-item {
   line-height: 3.5;
 }
