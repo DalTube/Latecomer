@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10조 후발주자</title>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- bootstrap -->
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+    crossorigin="anonymous">
+
+    <!-- css 공통 -->
+    <link rel="stylesheet" href="./css/common.css" />
+    
+    <!-- FireStore(FireBase) -->
+    <script type="module">
+        // Firebase SDK 라이브러리 가져오기
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Firebase 구성 정보 설정
+        const firebaseConfig = {
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            apiKey: "AIzaSyD4JNPmDgABE8WLbUEnGXWBGa_eAmlWKT0",
+            authDomain: "latecomer-dda33.firebaseapp.com",
+            projectId: "latecomer-dda33",
+            storageBucket: "latecomer-dda33.appspot.com",
+            messagingSenderId: "705225415850",
+            appId: "1:705225415850:web:2e613c8147211b7f5c84d3",
+            measurementId: "G-1H6HC43L8K"
+        };
+
+        // Firebase 인스턴스 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        //멤버 정보 가져오기
+        let docs = await getDocs(collection(db, "member"));
+        let memberCnt = docs.size;
+        let cnt = 1;
+
+        docs.forEach((doc) => {
+            let row = doc.data();
+            let name = row['name'];
+            let image = row['image'];
+            let mbti = row['mbti'];
+            let gitHub = row['gitHub'];
+            let blog = row['blog'];
+            let objective = row['objective'];
+            let determination = row['determination'];
+
+            let temp_html = `
+            <div class="col">
+                <div id="memberCard${cnt}" class="card h-100">
+                    <img src="${image}" class="card-img-top cardImg" alt="...">
+                    <div class="card-body">
+                        <h5 id="memeberName" class="card-title">${name}</h5>
+                    </div>
+                </div>
+            </div>`;
+
+            $('#memberCards').append(temp_html);
+
+            //개인 카드 클릭 이벤트
+            $("#memberCard"+cnt).click(async function (event) {
+                let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
+                $("#popup").css('display','flex').hide().fadeIn();
+
+                const col = collection(db, 'member');
+                const q = await query(col, where('name', '==', elem));
+                const docs = await getDocs(q);
+                docs.forEach((doc) => {
+                    let row = doc.data();
+                    console.log(row['gitHub']);
+
+                    $('#tName').text(row['name']);
+                    $('#tMbti').text(row['mbti']);
+                    $('#tGithub').text(row['gitHub']);
+                    $('#tBlog').text(row['blog']);
+                    $('#tObjective').text(row['objective']);
+                    $('#tDetermination').text(row['determination']);
+                    $('#tImg').attr('src', row['image']);
+                });     
+            });
+
+            cnt++; //cnt 증가
+        });
+
+        let addImgUrl = "https://cdn-icons-png.flaticon.com/512/14365/14365813.png";
+        let add_html = `
+        <div class="col">
+            <div id="openAddMember" class="card h-100">
+                <img src=${addImgUrl} class="card-img-top" style="padding-top: 60px;" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">합류</span></h5>
+                </div>
+            </div>
+        </div>`;
+        $('#memberCards').append(add_html);
+
+        //멤버 추가 팝업 
+        $("#openAddMember").click(async function (event) {
+            $('#addMemberBox').toggle();
+            event.preventDefault();
+            $('html,body').animate({scrollTop:$('html').offset().top}, 0);
+            $('#name').focus();
+        });
+
+        //멤버 추가 팝업 닫기 
+        $("#closeMemberBox").click(async function () {
+            $('#addMemberBox').toggle();
+        });
+
+        //멤버 추가 팝업 등록
+        $("#saveMemberBox").click(async function () {
+
+            let name = $('#name').val();
+            let image = $('#image').val();
+            let mbti = $('#mbti').val();
+            let gitHub = $('#gitHub').val();
+            let blog = $('#blog').val();
+            let objective = $('#objective').val();
+            let determination = $('#determination').val();
+
+            // if($.trim(name) == "" || $.trim(image) == "" ||$.trim(mbti) == "" || $.trim(github) == "" ||
+            //     $.trim(blog) == "" || $.trim(objective) == "" || $.trim(determination) == "" ) {
+            //         return;
+            // }
+
+            //체크 로직
+            if($.trim(name) == "") {
+                alert("이름은 필수 입력입니다.");
+                $('#name').focus();
+                return;
+            }
+            if($.trim(image) == "") {
+                alert("프로필 이미지 Url은 필수 입력입니다.");
+                $('#image').focus();
+                return;
+            }
+
+            //DB 저장
+            let doc = {
+                'name': name,
+                'image': image,
+                'mbti': mbti,
+                'gitHub': gitHub,
+                'blog': blog,
+                'objective': objective,
+                'determination': determination,
+            };
+            await addDoc(collection(db, "member"), doc);
+
+            alert("후발주자에 오신 것을 환영합니다.");
+            window.location.reload();
+        });
+
+        //멤버 상세 닫기 버튼
+        $("#closeBtn").click(async function () {
+            $("#popup").css('display','flex').hide().fadeOut();
+        });
+        
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Gowun+Dodum&family=Nanum+Pen+Script&family=Rubik+Wet+Paint&display=swap');
+
+        .bona-nova-sc-regular {
+            font-family: "Bona Nova SC", serif;
+            font-weight: 4000;
+            font-size: 70px;
+            font-style: normal;
+        }
+
+        .memberMain{
+            width: 1000px;
+            margin: 300px auto 20px auto;
+        }
+
+        .card-title{
+            text-align: center;
+        }
+
+        .popupWrap{
+            background-color:rgba(0,0,0,.3); 
+            justify-content:center;
+            align-items:center;    
+            position:fixed;        
+            top:200px;
+            left:0;
+            right:0;
+            bottom:0;               
+            display:flex;
+            padding:15px; 
+            display:none;
+            z-index: 1000;
+        }
+        .popup{
+            width:100%;               
+            max-width:30%;
+            height: 80%;          
+            border-radius:10px;       
+            overflow:hidden;          
+            background-color:#fbfbfb; 
+            box-shadow: 5px 10px 10px 1px rgba(0,0,0,.3); 
+        }
+
+        .bodyContent {
+            /* width: 100%; */
+            height: 80%;
+            margin: auto 20px auto 20px;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bodyContentBox1 {
+            width: 40%;
+            height: 100%;
+            box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
+        }
+
+        .bodyContentBox2 {
+            width: 60%;
+            height: 100%;
+            padding: 5px 0 0 20px;
+        }
+
+        .bodyContentBox1 > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .bodyTitlebox {
+            position: relative;
+            background-color: antiquewhite;
+        }
+
+        .bodyTitle {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .addMemberBox {
+            width: 500px;
+            margin: 50px auto 0px auto;
+            padding-top: 30px;
+            display: none;
+        }
+
+        .memberBoxBtn{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .memberBoxBtn > button{
+            margin-right: 5px;
+        }
+
+        .form-floating {
+            width: 500px;
+        }
+
+        .cardImg {
+            height:100%;
+            object-fit: cover; 
+        }
+
+        .closeBtn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .detailLabel {
+            width: 100%;
+            font-weight: bold;
+            background-color: lightgray;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 5px 0 5px 5px;
+        }
+
+        .detailText {
+            width: 100%;
+            padding-left: 20px;
+        }
+
+        .essential {
+            color: red;
+        }
+
+        .spanDiv {
+            margin-bottom: 5px;
+            padding: 5px 0 5px 0;
+            background-color: whitesmoke;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
+        }
+    </style>
+</head>
+<body>
+    <!--Main Navigation-->
+    <header>
+        <!-- Sidebar / Left Menu -->
+        <nav id="sidebarMenu" class="collapse d-lg-block sidebar collapse bg-white">
+            <div class="position-sticky">
+                <div class="list-group list-group-flush mx-3 mt-4">
+                    <a href="index.html" class="list-group-item list-group-item-action py-2 ripple" aria-current="true">
+                        <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>팀 소개</span>
+                    </a>
+                    <a href="member.html" class="list-group-item list-group-item-action py-2 ripple active">
+                        <i class="fas fa-chart-area fa-fw me-3"></i><span>멤버 소개</span>
+                    </a>
+                    <a href="guestbook.html" class="list-group-item list-group-item-action py-2 ripple"><i
+                        class="fas fa-lock fa-fw me-3"></i><span>방명록</span></a>
+                    </a>
+                    <a href="dust.html" class="list-group-item list-group-item-action py-2 ripple"><i
+                        class="fas fa-lock fa-fw me-3"></i><span>미세먼지</span></a>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <!-- Sidebar -->
+    
+        <!-- Navbar / Header -->
+        <nav id="main-navbar" class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <!-- Container wrapper -->
+            <div class="container-fluid">
+                <div class="header">
+                    <h1>멤버 소개</h1>
+                </div>
+            </div>
+            <!-- Container wrapper -->
+        </nav>
+        <!-- Navbar -->
+  </header>
+  <!--Main Navigation-->
+  
+  <!--Main layout-->
+    <main>
+        <div class="main">
+            <!-- 멤버 추가 입력하는 영역 -->
+            <div class="addMemberBox" id="addMemberBox">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="name"
+                            placeholder="이름">
+                        <label for="floatingInput">이름<span class="essential">*</span></label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="image"
+                            placeholder="이미지 Url">
+                        <label for="floatingInput">이미지 Url<span class="essential">*</span></label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="mbti"
+                            placeholder="MBTI">
+                        <label for="floatingInput">MBTI</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="gitHub"
+                            placeholder="gitHub">
+                        <label for="floatingInput">gitHub</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="blog"
+                            placeholder="블로그">
+                        <label for="floatingInput">블로그</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="objective"
+                            placeholder="목표">
+                        <label for="floatingInput">목표</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="determination"
+                            placeholder="각오">
+                        <label for="floatingInput">각오</label>
+                    </div>
+                    <div class="memberBoxBtn">
+                        <button id="saveMemberBox" type="button"
+                            class="btn btn-dark">합류</button>
+                        <button id="closeMemberBox" type="button" class="btn btn-outline-dark">닫기</button>
+                    </div>
+            </div>
+
+            <!-- DB에서 데이터 가져와서 멤버 정보 출력 -->
+            <div class="memberMain">
+                <div id="memberCards" class="row row-cols-1 row-cols-md-4 g-4">
+                    <!-- append 처리 -->
+                </div>
+            </div>
+        </div>
+    </main>
+    <!--Main layout-->
+
+    <!-- 멤버 상세 팝업 -->
+    <div class="popupWrap" id="popup">
+        <div class="popup">
+            <div class="bodyTitlebox">
+                <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
+            </div>
+            
+            <div class="bodyContent">
+                <div class="bodyContentBox1">
+                    <img id="tImg" src="">
+                </div>
+                <div class="bodyContentBox2">
+                    <div class="detailLabel"><span>이름</span></div>
+                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
+                    <div class="detailLabel"><span>MBTI</span></div>
+                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
+                    <div class="detailLabel"><span>GitHub</span></div>
+                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
+                    <div class="detailLabel"><span>Blog</span></div>
+                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
+                    <div class="detailLabel"><span>목표</span></div>
+                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
+                    <div class="detailLabel"><span>각오</span></div>
+                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
