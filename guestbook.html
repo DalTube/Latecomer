@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10조 후발주자</title>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- bootstrap -->
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+    crossorigin="anonymous">
+
+    <!-- css 공통 -->
+    <link rel="stylesheet" href="./css/common.css" />
+
+    <!-- FireStore(FireBase) -->
+    <script type="module">
+        // Firebase SDK 라이브러리 가져오기
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Firebase 구성 정보 설정
+        const firebaseConfig = {
+            /*// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            apiKey: "AIzaSyB2-aB7klOrl15Ese3S14IlEtGH-YLNac4",
+            authDomain: "sparta-b0c8e.firebaseapp.com",
+            projectId: "sparta-b0c8e",
+            storageBucket: "sparta-b0c8e.appspot.com",
+            messagingSenderId: "514377903558",
+            appId: "1:514377903558:web:bf7a58eacd618b5d5596c7",
+            measurementId: "G-VBBVSJ9C8J"*/
+            apiKey: "AIzaSyB2tG0j1iQIA2Zii5-Sv50lFlJwPN7ZMRk",
+            authDomain: "sparta-5a89e.firebaseapp.com",
+            projectId: "sparta-5a89e",
+            storageBucket: "sparta-5a89e.appspot.com",
+            messagingSenderId: "375925744397",
+            appId: "1:375925744397:web:d7e3037ef54e7ccd070644",
+            measurementId: "G-KT9Q0GGB5G"
+        };
+
+        // Firebase 인스턴스 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let load_first = true;//첫 실행 체크용
+
+        // 방명록 저장하는 용도.
+        $('#mail-btn').click(async function() {
+            let name_temp = $('#mail-name').val();//이름
+            let value_temp = $('#mail-value').val();//내용
+            let time_temp;
+            await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul').then(res => res.json()).then(data_temp => {
+                
+
+                time_temp = data_temp['datetime'];
+                console.log(time_temp);
+                
+                let mail_data = {
+                'name':name_temp,
+                'value':value_temp,
+                'time': time_temp
+                }
+             
+                addDoc(collection(db,'mailBox'),mail_data);
+                alert('방명록 등록 완료');
+                load_first = true;
+                mailData_reroad();
+            })     
+        })
+        mailData_reroad();
+        // 방명록 불러오는 용도. 
+        async function mailData_reroad(){
+        if(load_first)
+        {
+            load_first = false;
+            $('#mail-maker').empty();// 메일 박스 초기화
+            let data_temp = await getDocs(collection(db, "mailBox"));//데이터 받아옴
+            console.log(data_temp);
+            const records = data_temp.docs.map((doc_temp) => doc_temp.data());
+            let i_temp = 0; // 인덱스 용도 
+            let mail_max = 10; // 보여주는 메일 최대치 
+            let check_cutLine = (records.length - mail_max);// 한계치 지정
+            
+            console.log(check_cutLine);
+            if(records.length > 0)
+            { 
+                records.forEach(data => {
+                if(check_cutLine <= 0)
+                {
+                    let get_data = data;
+                    let home_Html = `<p class="mail-data">${get_data.name} : 닉네임 ${get_data.value} : 내용 ${get_data.time} : 시간</p>`;
+                    $('#mail-maker').append(home_Html);
+                }else
+                {
+                    if(i_temp >= check_cutLine)//커트라인 보다 높을때 발동
+                    {
+                        console.log(check_cutLine);
+                        console.log(i_temp);
+                        let get_data = data;
+                        let home_Html = `<p class="mail-data">${get_data.name} : 닉네임 ${get_data.value} : 내용 ${get_data.time} : 시간</p>`;
+                        $('#mail-maker').append(home_Html);
+                    }  
+                }
+                i_temp++;
+                });  
+            }else{
+                alert('방명록이 비어있습니다.');
+            }  
+        }else
+        console.log('이상 발생');         
+    }
+    </script>
+</head>
+<body>
+    <!--Main Navigation-->
+    <header >
+        <!-- Sidebar / Left Menu -->
+        <nav id="sidebarMenu" class="collapse d-lg-block sidebar collapse bg-white">
+            <div class="position-sticky">
+                <div class="list-group list-group-flush mx-3 mt-4">
+                    <a href="index.html" class="list-group-item list-group-item-action py-2 ripple" aria-current="true">
+                        <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>팀소개</span>
+                    </a>
+                    <a href="member.html" class="list-group-item list-group-item-action py-2 ripple ">
+                        <i class="fas fa-chart-area fa-fw me-3"></i><span>멤버 소개</span>
+                    </a>
+                    <a href="guestbook.html" class="list-group-item list-group-item-action py-2 ripple active"><i
+                        class="fas fa-lock fa-fw me-3"></i><span>방명록</span></a>
+                    </a>
+                    <a href="dust.html" class="list-group-item list-group-item-action py-2 ripple"><i
+                        class="fas fa-lock fa-fw me-3"></i><span>미세먼지</span></a>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <!-- Sidebar -->
+    
+        <!-- Navbar / Header -->
+        <nav id="main-navbar" class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <!-- Container wrapper -->
+            <div class="container-fluid">
+                <div class="header">
+                    <h1>방명록</h1>
+                </div>
+            </div>
+            <!-- Container wrapper -->
+        </nav>
+        <!-- Navbar -->
+  </header>
+  <!--Main Navigation-->
+  
+  <!--Main layout-->
+    <main class="main">
+        <div class="mailBox-main" >
+            <div class="mailBox-style">
+                <input id="mail-name" >닉네임</input>
+                <input id="mail-value" class="mail-style">내용</input>
+                <button id="mail-btn" class="mail-button">눌러주세요</button>
+                <!--아래에 내용 생성-->
+                <div id="mail-maker">
+                    
+                </div>
+              </div>
+        </div>
+    </main>
+  <!--Main layout-->
+</body>
+</html>
