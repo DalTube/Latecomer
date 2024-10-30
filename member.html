@@ -77,7 +77,6 @@
                 const docs = await getDocs(q);
                 docs.forEach((doc) => {
                     let row = doc.data();
-                    console.log(row['gitHub']);
 
                     $('#tName').text(row['name']);
                     $('#tMbti').text(row['mbti']);
@@ -165,7 +164,6 @@
         $("#closeBtn").click(async function () {
             $("#popup").css('display','flex').hide().fadeOut();
         });
-        
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Gowun+Dodum&family=Nanum+Pen+Script&family=Rubik+Wet+Paint&display=swap');
@@ -179,7 +177,7 @@
 
         .memberMain{
             width: 1000px;
-            margin: 300px auto 20px auto;
+            margin: 250px auto 20px auto;
         }
 
         .card-title{
@@ -202,7 +200,7 @@
         }
         .popup{
             width:100%;               
-            max-width:30%;
+            max-width:35%;
             height: 80%;          
             border-radius:10px;       
             overflow:hidden;          
@@ -222,13 +220,13 @@
         }
 
         .bodyContentBox1 {
-            width: 40%;
+            width: 45%;
             height: 100%;
             box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
         }
 
         .bodyContentBox2 {
-            width: 60%;
+            width: 55%;
             height: 100%;
             padding: 5px 0 0 20px;
         }
@@ -311,6 +309,11 @@
             border-bottom-left-radius: 5px;
             border-bottom-right-radius: 5px;
             box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
+        }
+
+        .card:hover {
+            border: 2px solid rgba(0, 0, 0, .125);
+            border-color: darkgray;
         }
     </style>
 </head>
