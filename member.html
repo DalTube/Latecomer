@@ -42,6 +42,9 @@
         
         //멤버 정보 가져오기
         let docs = await getDocs(collection(db, "member"));
+        let memberCnt = docs.size;
+        let cnt = 1;
+
         docs.forEach((doc) => {
             let row = doc.data();
             let name = row['name'];
@@ -54,15 +57,31 @@
 
             let temp_html = `
             <div class="col">
-                <div id="memberCard" class="card h-100">
+                <div id="memberCard${cnt}" class="card h-100">
                     <img src="${image}" class="card-img-top cardImg" alt="...">
                     <div class="card-body">
-                        <h5 class="card-title">${name}</h5>
+                        <h5 id="memeberName" class="card-title">${name}</h5>
                     </div>
                 </div>
             </div>`;
 
             $('#memberCards').append(temp_html);
+
+            //개인 카드 클릭 이벤트
+            $("#memberCard"+cnt).click(async function (event) {
+                let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
+                $("#popup").css('display','flex').hide().fadeIn();
+
+                const col = collection(db, 'member');
+                const q = await query(col, where('name', '==', elem));
+                const docs = await getDocs(q);
+                docs.forEach((doc) => {
+                    let row = doc.data();
+                    console.log(row);
+                });     
+            });
+
+            cnt++; //cnt 증가
         });
 
         let addImgUrl = "https://cdn-icons-png.flaticon.com/512/14365/14365813.png";
@@ -71,27 +90,11 @@
             <div id="openAddMember" class="card h-100">
                 <img src=${addImgUrl} class="card-img-top" style="padding-top: 60px;" alt="...">
                 <div class="card-body">
-                    <h5 id="memeberName" class="card-title">합류</span></h5>
+                    <h5 class="card-title">합류</span></h5>
                 </div>
             </div>
         </div>`;
         $('#memberCards').append(add_html);
-
-        //개인 카드 클릭 이벤트
-        $("#memberCard").click(async function (event) {
-            console.log(event);
-            let elem = document.getElementById('memeberName').getHTML();
-            console.log(elem);
-            $("#popup").css('display','flex').hide().fadeIn();
-
-            const col = collection(db, 'member');
-            const q = await query(col, where('name', '==', elem));
-            const docs = await getDocs(q);
-            docs.forEach((doc) => {
-                let row = doc.data();
-                console.log(row);
-            });         
-        });
 
         //멤버 추가 팝업 
         $("#openAddMember").click(async function (event) {
@@ -117,6 +120,24 @@
             let objective = $('#objective').val();
             let determination = $('#determination').val();
 
+            // if($.trim(name) == "" || $.trim(image) == "" ||$.trim(mbti) == "" || $.trim(github) == "" ||
+            //     $.trim(blog) == "" || $.trim(objective) == "" || $.trim(determination) == "" ) {
+            //         alert("공백은 아니되오");
+            //         return;
+            // }
+
+            if($.trim(name) == "") {
+                alert("이름은 필수 입력입니다.");
+                $('#name').focus();
+                return;
+            }
+
+            if($.trim(image) == "") {
+                alert("프로필 이미지 Url은 필수 입력입니다.");
+                $('#image').focus();
+                return;
+            }
+
             let doc = {
                 'name': name,
                 'image': image,
@@ -127,10 +148,11 @@
                 'determination': determination,
             };
             await addDoc(collection(db, "member"), doc);
+
             alert("후발주자에 오신 것을 환영합니다.");
             window.location.reload();
+
         });
-        
     </script>
     <style>
         .memberMain{
@@ -269,12 +291,12 @@
                     <div class="form-floating mb-3">
                         <input class="form-control" id="name"
                             placeholder="이름">
-                        <label for="floatingInput">이름</label>
+                        <label for="floatingInput">이름<span style="color: red;">*</span></label>
                     </div>
                     <div class="form-floating mb-3">
                         <input class="form-control" id="image"
-                            placeholder="이미지">
-                        <label for="floatingInput">이미지</label>
+                            placeholder="이미지 Url">
+                        <label for="floatingInput">이미지 Url<span style="color: red;">*</span></label>
                     </div>
                     <div class="form-floating mb-3">
                         <input class="form-control" id="mbti"
