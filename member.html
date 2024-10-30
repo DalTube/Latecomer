@@ -50,7 +50,7 @@
             let name = row['name'];
             let image = row['image'];
             let mbti = row['mbti'];
-            let github = row['github'];
+            let gitHub = row['gitHub'];
             let blog = row['blog'];
             let objective = row['objective'];
             let determination = row['determination'];
@@ -77,7 +77,15 @@
                 const docs = await getDocs(q);
                 docs.forEach((doc) => {
                     let row = doc.data();
-                    console.log(row);
+                    console.log(row['gitHub']);
+
+                    $('#tName').text(row['name']);
+                    $('#tMbti').text(row['mbti']);
+                    $('#tGithub').text(row['gitHub']);
+                    $('#tBlog').text(row['blog']);
+                    $('#tObjective').text(row['objective']);
+                    $('#tDetermination').text(row['determination']);
+                    $('#tImg').attr('src', row['image']);
                 });     
             });
 
@@ -115,34 +123,34 @@
             let name = $('#name').val();
             let image = $('#image').val();
             let mbti = $('#mbti').val();
-            let github = $('#github').val();
+            let gitHub = $('#gitHub').val();
             let blog = $('#blog').val();
             let objective = $('#objective').val();
             let determination = $('#determination').val();
 
             // if($.trim(name) == "" || $.trim(image) == "" ||$.trim(mbti) == "" || $.trim(github) == "" ||
             //     $.trim(blog) == "" || $.trim(objective) == "" || $.trim(determination) == "" ) {
-            //         alert("공백은 아니되오");
             //         return;
             // }
 
+            //체크 로직
             if($.trim(name) == "") {
                 alert("이름은 필수 입력입니다.");
                 $('#name').focus();
                 return;
             }
-
             if($.trim(image) == "") {
                 alert("프로필 이미지 Url은 필수 입력입니다.");
                 $('#image').focus();
                 return;
             }
 
+            //DB 저장
             let doc = {
                 'name': name,
                 'image': image,
                 'mbti': mbti,
-                'github': github,
+                'gitHub': gitHub,
                 'blog': blog,
                 'objective': objective,
                 'determination': determination,
@@ -151,10 +159,24 @@
 
             alert("후발주자에 오신 것을 환영합니다.");
             window.location.reload();
-
         });
+
+        //멤버 상세 닫기 버튼
+        $("#closeBtn").click(async function () {
+            $("#popup").css('display','flex').hide().fadeOut();
+        });
+        
     </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Gowun+Dodum&family=Nanum+Pen+Script&family=Rubik+Wet+Paint&display=swap');
+
+        .bona-nova-sc-regular {
+            font-family: "Bona Nova SC", serif;
+            font-weight: 4000;
+            font-size: 70px;
+            font-style: normal;
+        }
+
         .memberMain{
             width: 1000px;
             margin: 300px auto 20px auto;
@@ -180,7 +202,7 @@
         }
         .popup{
             width:100%;               
-            max-width:50%;
+            max-width:30%;
             height: 80%;          
             border-radius:10px;       
             overflow:hidden;          
@@ -202,18 +224,31 @@
         .bodyContentBox1 {
             width: 40%;
             height: 100%;
+            box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
         }
 
         .bodyContentBox2 {
             width: 60%;
             height: 100%;
-            padding: 20px 0 0 20px;
+            padding: 5px 0 0 20px;
         }
 
         .bodyContentBox1 > img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        .bodyTitlebox {
+            position: relative;
+            background-color: antiquewhite;
+        }
+
+        .bodyTitle {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
         }
 
         .addMemberBox {
@@ -241,6 +276,41 @@
         .cardImg {
             height:100%;
             object-fit: cover; 
+        }
+
+        .closeBtn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .detailLabel {
+            width: 100%;
+            font-weight: bold;
+            background-color: lightgray;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 5px 0 5px 5px;
+        }
+
+        .detailText {
+            width: 100%;
+            padding-left: 20px;
+        }
+
+        .essential {
+            color: red;
+        }
+
+        .spanDiv {
+            margin-bottom: 5px;
+            padding: 5px 0 5px 0;
+            background-color: whitesmoke;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
         }
     </style>
 </head>
@@ -285,18 +355,17 @@
   <!--Main layout-->
     <main>
         <div class="main">
-
             <!-- 멤버 추가 입력하는 영역 -->
             <div class="addMemberBox" id="addMemberBox">
                     <div class="form-floating mb-3">
                         <input class="form-control" id="name"
                             placeholder="이름">
-                        <label for="floatingInput">이름<span style="color: red;">*</span></label>
+                        <label for="floatingInput">이름<span class="essential">*</span></label>
                     </div>
                     <div class="form-floating mb-3">
                         <input class="form-control" id="image"
                             placeholder="이미지 Url">
-                        <label for="floatingInput">이미지 Url<span style="color: red;">*</span></label>
+                        <label for="floatingInput">이미지 Url<span class="essential">*</span></label>
                     </div>
                     <div class="form-floating mb-3">
                         <input class="form-control" id="mbti"
@@ -304,9 +373,9 @@
                         <label for="floatingInput">MBTI</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <input class="form-control" id="github"
-                            placeholder="Github">
-                        <label for="floatingInput">Github</label>
+                        <input class="form-control" id="gitHub"
+                            placeholder="gitHub">
+                        <label for="floatingInput">gitHub</label>
                     </div>
                     <div class="form-floating mb-3">
                         <input class="form-control" id="blog"
@@ -338,35 +407,33 @@
             </div>
         </div>
     </main>
-
     <!--Main layout-->
+
+    <!-- 멤버 상세 팝업 -->
     <div class="popupWrap" id="popup">
         <div class="popup">
-            <!-- <div class="popup-head">
-                <span class="head-title">Profile</span>
-            </div> -->
-            <div style="background-color: black; float: right; width: 100%; height: 35px; ">
-                <!-- <button type="button" class="btn-close" aria-label="Close"></button> -->
-                <img src="img/closePopupButton.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+            <div class="bodyTitlebox">
+                <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
             </div>
-            <div data-bs-theme="dark">
-                <button type="button" class="btn-close" aria-label="Close"></button>
-                <button type="button" class="btn-close" disabled aria-label="Close"></button>
-              </div>
-            <div class="body-titlebox" style="text-align: center; padding: 30px 0 0 0;">
-                <h1>Profile</h1>
-            </div>
+            
             <div class="bodyContent">
                 <div class="bodyContentBox1">
-                    <img src="https://helpx.adobe.com/content/dam/help/en/photoshop/using/quick-actions/remove-background-before-qa1.png">
+                    <img id="tImg" src="">
                 </div>
                 <div class="bodyContentBox2">
-                    <p>이름 <span></span></p>
-                    <p>mbti</p>
-                    <p>github</p>
-                    <p>blog</p>
-                    <p>목표</p>
-                    <p>각오</p>
+                    <div class="detailLabel"><span>이름</span></div>
+                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
+                    <div class="detailLabel"><span>MBTI</span></div>
+                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
+                    <div class="detailLabel"><span>GitHub</span></div>
+                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
+                    <div class="detailLabel"><span>Blog</span></div>
+                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
+                    <div class="detailLabel"><span>목표</span></div>
+                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
+                    <div class="detailLabel"><span>각오</span></div>
+                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
                 </div>
             </div>
         </div>
