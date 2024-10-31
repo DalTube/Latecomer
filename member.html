@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { updateDoc,collection, query, where, addDoc, getDocs, deleteDoc, setDoc, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -72,19 +72,21 @@
                 let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
                 $("#popup").css('display','flex').hide().fadeIn();
 
+                
                 const col = collection(db, 'member');
                 const q = await query(col, where('name', '==', elem));
                 const docs = await getDocs(q);
                 docs.forEach((doc) => {
                     let row = doc.data();
-                    console.log(row['gitHub']);
-
-                    $('#tName').text(row['name']);
-                    $('#tMbti').text(row['mbti']);
-                    $('#tGithub').text(row['gitHub']);
-                    $('#tBlog').text(row['blog']);
-                    $('#tObjective').text(row['objective']);
-                    $('#tDetermination').text(row['determination']);
+                    console.log(doc.id);
+                    $('#deleteBtn').val(doc.id);// 삭제 버튼한테 삭제할 id를 부여 합니다.
+                    $('#changeBtn').val(doc.id);// 수정 버튼한테 삭제할 id를 부여 합니다.
+                    $('#tName').val(row['name']);
+                    $('#tMbti').val(row['mbti']);
+                    $('#tGithub').val(row['gitHub']);
+                    $('#tBlog').val(row['blog']);
+                    $('#tObjective').val(row['objective']);
+                    $('#tDetermination').val(row['determination']);
                     $('#tImg').attr('src', row['image']);
                 });     
             });
@@ -144,7 +146,7 @@
                 $('#image').focus();
                 return;
             }
-
+            
             //DB 저장
             let doc = {
                 'name': name,
@@ -165,7 +167,46 @@
         $("#closeBtn").click(async function () {
             $("#popup").css('display','flex').hide().fadeOut();
         });
-        
+        //삭제 기능 완성 했습니다.
+        //멤버 삭제 버튼 
+        $("#deleteBtn").click(async function () {
+           const delet_check = confirm("삭제하시겠습니까?");
+           if(delet_check)
+           {
+                let delet_data_id = $('#deleteBtn').val();// 부여한 id를 받아와서 삭제를 진행합니다.
+                console.log(delet_data_id);
+                await deleteDoc(doc(db, "member", delet_data_id));
+                alert("삭제하였습니다.");
+                window.location.reload()
+           }
+        });
+        //멤버 수정 버튼 
+        $("#changeBtn").click(async function () {
+           const delet_check = confirm("수정하시겠습니까?");
+           if(delet_check)
+           {
+                let name = $('#tName').val();;
+                let mbti = $('#tMbti').val();
+                let gitHub = $('#tGithub').val();
+                let blog = $('#tBlog').val();
+                let objective = $('#tObjective').val();
+                let determination = $('#tDetermination').val();
+
+                let delet_data_id = $('#changeBtn').val();// 부여한 id를 받아와서 삭제를 진행합니다.
+                console.log(delet_data_id);
+                await updateDoc(doc(db, "member", delet_data_id),
+                {
+                    'name': name,
+                    'mbti': mbti,
+                    'gitHub': gitHub,
+                    'blog': blog,
+                    'objective': objective,
+                    'determination': determination
+                });
+                alert("수정되었습니다.");
+                window.location.reload()
+           }
+        });
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Gowun+Dodum&family=Nanum+Pen+Script&family=Rubik+Wet+Paint&display=swap');
@@ -179,7 +220,7 @@
 
         .memberMain{
             width: 1000px;
-            margin: 300px auto 20px auto;
+            margin: 230px auto 20px auto;
         }
 
         .card-title{
@@ -202,8 +243,8 @@
         }
         .popup{
             width:100%;               
-            max-width:30%;
-            height: 80%;          
+            max-width:35%;
+            height: 575px;          
             border-radius:10px;       
             overflow:hidden;          
             background-color:#fbfbfb; 
@@ -222,15 +263,15 @@
         }
 
         .bodyContentBox1 {
-            width: 40%;
+            width: 45%;
             height: 100%;
             box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
         }
 
         .bodyContentBox2 {
-            width: 60%;
+            width: 55%;
             height: 100%;
-            padding: 5px 0 0 20px;
+            padding: 0 0 0 20px;
         }
 
         .bodyContentBox1 > img {
@@ -285,6 +326,20 @@
             margin-top: 10px;
             margin-right: 10px;
         }
+        .deleteBtn{
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+        .changeBtn{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin-bottom : 10px;
+            margin-left: 10px;
+        }
 
         .detailLabel {
             width: 100%;
@@ -312,6 +367,11 @@
             border-bottom-right-radius: 5px;
             box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, .3);
         }
+
+        .card:hover {
+            border: 2px solid rgba(0, 0, 0, .125);
+            border-color: darkgray;
+        }
     </style>
 </head>
 <body>
@@ -330,9 +390,9 @@
                     <a href="guestbook.html" class="list-group-item list-group-item-action py-2 ripple"><i
                         class="fas fa-lock fa-fw me-3"></i><span>방명록</span></a>
                     </a>
-                    <a href="dust.html" class="list-group-item list-group-item-action py-2 ripple"><i
+                    <!-- <a href="dust.html" class="list-group-item list-group-item-action py-2 ripple"><i
                         class="fas fa-lock fa-fw me-3"></i><span>미세먼지</span></a>
-                    </a>
+                    </a> -->
                 </div>
             </div>
         </nav>
@@ -343,7 +403,7 @@
             <!-- Container wrapper -->
             <div class="container-fluid">
                 <div class="header">
-                    <h1>멤버 소개</h1>
+                    <h1 class="head_text">'후발주자'</h1>
                 </div>
             </div>
             <!-- Container wrapper -->
@@ -414,7 +474,9 @@
         <div class="popup">
             <div class="bodyTitlebox">
                 <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
-                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button><!-- 끄기 버튼 -->
+                <button value="1" type="button" class="deleteBtn" aria-label="Close" id="deleteBtn">삭제</button><!-- 삭제 버튼 -->
+                <button value="1" type="button" class="changeBtn" aria-label="Close" id="changeBtn">수정</button><!-- 삭제 버튼 -->
             </div>
             
             <div class="bodyContent">
@@ -422,18 +484,19 @@
                     <img id="tImg" src="">
                 </div>
                 <div class="bodyContentBox2">
+                    
                     <div class="detailLabel"><span>이름</span></div>
-                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tName" class="detailText"></input></div>
                     <div class="detailLabel"><span>MBTI</span></div>
-                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tMbti" class="detailText"></input></div>
                     <div class="detailLabel"><span>GitHub</span></div>
-                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tGithub" class="detailText"></input></div>
                     <div class="detailLabel"><span>Blog</span></div>
-                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tBlog" class="detailText"></input></div>
                     <div class="detailLabel"><span>목표</span></div>
-                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tObjective" class="detailText"></input></div>
                     <div class="detailLabel"><span>각오</span></div>
-                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tDetermination" class="detailText"></input></div>
                 </div>
             </div>
         </div>
