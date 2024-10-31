@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -72,12 +72,14 @@
                 let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
                 $("#popup").css('display','flex').hide().fadeIn();
 
+                
                 const col = collection(db, 'member');
                 const q = await query(col, where('name', '==', elem));
                 const docs = await getDocs(q);
                 docs.forEach((doc) => {
                     let row = doc.data();
-
+                    console.log(doc.id);
+                    $('#deleteBtn').val(doc.id);// 삭제 버튼한테 삭제할 id를 부여 합니다.
                     $('#tName').text(row['name']);
                     $('#tMbti').text(row['mbti']);
                     $('#tGithub').text(row['gitHub']);
@@ -113,7 +115,7 @@
 
         //멤버 추가 팝업 닫기 
         $("#closeMemberBox").click(async function () {
-            $('#addMemberBox').toggle();
+            $('#memberCard').toggle();
         });
 
         //멤버 추가 팝업 등록
@@ -163,6 +165,19 @@
         //멤버 상세 닫기 버튼
         $("#closeBtn").click(async function () {
             $("#popup").css('display','flex').hide().fadeOut();
+        });
+        //삭제 기능 완성 했습니다.
+        //멤버 삭제 버튼 
+        $("#deleteBtn").click(async function () {
+           const delet_check = confirm("삭제하시겠습니까?");
+           if(delet_check)
+           {
+                let delet_data_id = $('#deleteBtn').val();// 부여한 id를 받아와서 삭제를 진행합니다.
+                console.log(delet_data_id);
+                await deleteDoc(doc(db, "member", delet_data_id));
+                alert("삭제하였습니다.");
+                window.location.reload()
+           }
         });
     </script>
     <style>
@@ -282,6 +297,13 @@
             right: 0;
             margin-top: 10px;
             margin-right: 10px;
+        }
+        .deleteBtn{
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin-top: 10px;
+            margin-left: 10px;
         }
 
         .detailLabel {
@@ -417,7 +439,8 @@
         <div class="popup">
             <div class="bodyTitlebox">
                 <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
-                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button><!-- 삭제 버튼 -->
+                <button value="1" type="button" class="btn-close deleteBtn" aria-label="Close" id="deleteBtn"></button><!-- 삭제 버튼 -->
             </div>
             
             <div class="bodyContent">
@@ -425,6 +448,7 @@
                     <img id="tImg" src="">
                 </div>
                 <div class="bodyContentBox2">
+                    
                     <div class="detailLabel"><span>이름</span></div>
                     <div class="spanDiv"><span id="tName" class="detailText"></span></div>
                     <div class="detailLabel"><span>MBTI</span></div>
