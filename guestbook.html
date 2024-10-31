@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, addDoc, getDocs, deleteDoc, setDoc, query, orderBy, limit, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, setDoc, query, orderBy, limit, doc,updateDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -185,10 +185,7 @@
                                 $("#mailUpdateBtn" + cnt).click(async function (event) {
                                     let savePw = $('#'+event.currentTarget.id).next().next().text(); //저장한 비밀번호
                                     let inputPw = $('#'+event.currentTarget.id).prev().val(); //입력한 비밀번호
-                                    console.log($('#'+event.currentTarget.id).prev());
-                                    console.log($('#'+event.currentTarget.id).next());
-                                    console.log(savePw);
-                                    console.log(inputPw);
+
                                     //비밀번호 입력 여부 체크
                                     if($.trim(inputPw) == ""){
                                         alert("비밀번호를 입력해주세요.");
@@ -202,7 +199,7 @@
                                         return;
                                     }
 
-                                    let docId = $('#'+event.currentTarget.id).next('div').next('div').next('div').text();
+                                    let docId = $('#'+event.currentTarget.id).next().next().next().text();
                                     // let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
                                     $("#popDocId").val(docId);
                                     $("#popup").css('display','flex').hide().fadeIn();
@@ -246,6 +243,17 @@
 
     $("#popupSave").click(async function (event) {
         
+        let data_id = $('#popDocId').val();
+        let value = $('#updateValue').val();
+
+        await updateDoc(doc(db, "mailBox", data_id),
+        {
+            'value': value,
+        });
+
+        alert("수정되었습니다.");
+        $("#popup").css('display','flex').hide().fadeOut();
+        window.location.reload();
     });
     
     </script>
@@ -481,7 +489,7 @@
                                 등록일
                             </div>
                             <div class="mail-divDel">
-                                삭제
+                                수정/삭제
                             </div>
                         </div>
                         <div id="mail-maker">
@@ -500,7 +508,7 @@
         <div class="popup">
             <div class="bodyContent">
                 <div class="bodyContentBox">
-                    <span style="font-size: bold;">내용</span><input id="mail-value" class="popInput"></input>
+                    <span style="font-size: bold;">내용</span><input id="updateValue" class="popInput"></input>
                     <input type="text" value="" id="popDocId" hidden>
                 </div>
                 <div class="buttonBox">
