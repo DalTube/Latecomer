@@ -50,16 +50,16 @@
         let mailpage_index = 0; //메일 10개씩 체크해서 늘리기
         let mailpage_chuseindex = 0;//버튼 누르면 값 받아오기 
         let load_first = true;//첫 실행 체크용
-        let mail_max = 10; // 보여주는 메일 최대치 
+        const mail_max = 10; // 보여주는 메일 최대치 
         
         // 방명록 저장하는 용도.
         $('#mail-btn').click(async function() {
-            let name_temp = $('#mail-name').val();//이름
-            let value_temp = $('#mail-value').val();//내용
+            let name_temp = $('#mail-name').val();// 이름
+            let value_temp = $('#mail-value').val();// 내용
             let time_temp;
+            // 서울 시간을 받아오기 위한 로직입니다. 비동기로 처리해서 처리하는동안 다른것을 누를수 있습니다.
             await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul').then(res => res.json()).then(data_temp => {
-                
-
+                // 시간을 받아와야만 저장이 됩니다.
                 time_temp = data_temp['datetime'];
                 console.log(time_temp);
                 
@@ -75,14 +75,15 @@
                 mailData_reroad();
             })     
         })
-        //page이동 버튼
+        //page이동 버튼 생성된 버튼들이 가질 클릭 이벤트
         $(document).on('click','#mailpage',function(click_d) {
+            mailpage_chuseindex = 0;
             mailpage_chuseindex = click_d.target.value;
             console.log(mailpage_chuseindex);
             load_first = true;
             mailData_reroad();
         })
-        
+        //처음 한번 부르기
         mailData_reroad();
 
         // 방명록 불러오는 용도. 
@@ -95,10 +96,12 @@
             let data_temp = await getDocs(collection(db, "mailBox"));//데이터 받아옴
             console.log(data_temp);
             const records = data_temp.docs.map((doc_temp) => doc_temp.data());
+            console.log(records);
             let i_temp = 0; // 인덱스 용도 
             let i_temp_2 = 0; // 인덱스 용도_2
             mailpage_index = 0; // 초기화 용도
-            let check_cutLine = (records.length - mail_max);// 한계치 지정
+            
+            let check_cutLine = (records.length);// 한계치 지정
             let check_once = false;//생성 재한거는
 
             btn_maker();
@@ -107,31 +110,33 @@
             { 
                 records.forEach(data => 
                 {
-                    if(!check_once)//커트라인 보다 높을때 발동
+                    if(!check_once)// 페이지에 생성 완료시 
                     {
-                        if(i_temp < (mail_max-1)+mailpage_chuseindex)//현재 페이지 최대값
+                        if(i_temp < (mail_max + Number(mailpage_chuseindex)))// 현재 페이지 최대값//여기가 채팅창 찍어주는 로직입니다.
                         {
-                            if(i_temp >= mailpage_chuseindex -1)//현재 페이지 최소값
+                            console.log(mail_max + Number(mailpage_chuseindex));// 자바스크립트는 확실히 무엇인지 지정을 해줘야 하네요 아니면 문자열로 만들어요!
+                
+                            if(i_temp >= mailpage_chuseindex)// 현재 페이지 최소값
                             {
-                                console.log(mailpage_chuseindex);
                                 let get_data = data;
-                                let home_Html = `<p class="mail-data">${get_data.name} : ㅣ닉네임ㅣ ${get_data.value} : ㅣ내용ㅣ ${get_data.time} : ㅣ시간ㅣ</p>`;
+                                let home_Html = `<p value="${data_temp.id}" class="mail-data">${get_data.name} : ㅣ닉네임ㅣ ${get_data.value} : ㅣ내용ㅣ ${get_data.time} : ㅣ시간ㅣ</p>`;
                                 $('#mail-maker').append(home_Html);
                             }
                         }
-                        else
+                        else //채팅 최대치 찍어주고 넘어가기 위한 로직입니다.
                         {
                             check_once = true;
                         }
                     } 
-                    if(i_temp_2 >= 9)
+                    if(i_temp_2 >= 9)// 몇 페이지 있는지 체크하기 위한 로직입니다.
                     {
                         mailpage_index++;
                         i_temp_2 = 0;
                         btn_maker();
-                    } 
+                    }
+                    // 여긴 위에 두개의 if 문을 빠져나온뒤 각 index들을 증가해주기 위한 곳입니다. 
                     i_temp_2++;
-                    console.log(i_temp_2);
+                    console.log(i_temp);
                     i_temp++;
                 });  
             }
@@ -142,10 +147,12 @@
         }else
         console.log('이상 발생');         
     }
-    function btn_maker(){//버튼 만들기 
+
+    function btn_maker(){//버튼 만들기 // 두곳에서 쓰기때문에 함수로 만들어놧습니다.
         let btn_html = `<button value="${mailpage_index * mail_max}"id="mailpage"class="mailpage_btns">${mailpage_index+1}</button>`;
         $('#mailpage-btn').append(btn_html);
     }
+
     </script>
 </head>
 <body>
