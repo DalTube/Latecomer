@@ -26,27 +26,26 @@
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
-            /*// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-            apiKey: "AIzaSyB2-aB7klOrl15Ese3S14IlEtGH-YLNac4",
-            authDomain: "sparta-b0c8e.firebaseapp.com",
-            projectId: "sparta-b0c8e",
-            storageBucket: "sparta-b0c8e.appspot.com",
-            messagingSenderId: "514377903558",
-            appId: "1:514377903558:web:bf7a58eacd618b5d5596c7",
-            measurementId: "G-VBBVSJ9C8J"*/
-            apiKey: "AIzaSyB2tG0j1iQIA2Zii5-Sv50lFlJwPN7ZMRk",
-            authDomain: "sparta-5a89e.firebaseapp.com",
-            projectId: "sparta-5a89e",
-            storageBucket: "sparta-5a89e.appspot.com",
-            messagingSenderId: "375925744397",
-            appId: "1:375925744397:web:d7e3037ef54e7ccd070644",
-            measurementId: "G-KT9Q0GGB5G"
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            apiKey: "AIzaSyD4JNPmDgABE8WLbUEnGXWBGa_eAmlWKT0",
+            authDomain: "latecomer-dda33.firebaseapp.com",
+            projectId: "latecomer-dda33",
+            storageBucket: "latecomer-dda33.appspot.com",
+            messagingSenderId: "705225415850",
+            appId: "1:705225415850:web:2e613c8147211b7f5c84d3",
+            measurementId: "G-1H6HC43L8K"
+            // apiKey: "AIzaSyB2tG0j1iQIA2Zii5-Sv50lFlJwPN7ZMRk",
+            // authDomain: "sparta-5a89e.firebaseapp.com",
+            // projectId: "sparta-5a89e",
+            // storageBucket: "sparta-5a89e.appspot.com",
+            // messagingSenderId: "375925744397",
+            // appId: "1:375925744397:web:d7e3037ef54e7ccd070644",
+            // measurementId: "G-KT9Q0GGB5G"
         };
 
         // Firebase 인스턴스 초기화
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         let mailpage_index = 0; //메일 10개씩 체크해서 늘리기
         let mailpage_chuseindex = 0;//버튼 누르면 값 받아오기 
         let load_first = true;//첫 실행 체크용
@@ -56,20 +55,23 @@
         $('#mail-btn').click(async function() {
             let name_temp = $('#mail-name').val();// 이름
             let value_temp = $('#mail-value').val();// 내용
+            let pw_temp = $('#mail-pw').val();
             let time_temp;
             // 서울 시간을 받아오기 위한 로직입니다. 비동기로 처리해서 처리하는동안 다른것을 누를수 있습니다.
             await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul').then(res => res.json()).then(data_temp => {
                 // 시간을 받아와야만 저장이 됩니다.
                 time_temp = data_temp['datetime'];
-                console.log(time_temp);
+                time_temp = time_temp.substr(0,10) + " " + time_temp.substr(11,8);
                 
                 let mail_data = {
                 'name':name_temp,
                 'value':value_temp,
-                'time': time_temp
+                'time': time_temp,
+                'password': pw_temp,
                 }
-             
-                addDoc(collection(db,'mailBox'),mail_data);
+                
+                let aa = addDoc(collection(db,'mailBox'),mail_data);
+                console.log(aa);
                 alert('방명록 등록 완료');
                 load_first = true;
                 mailData_reroad();
@@ -94,9 +96,7 @@
             $('#mail-maker').empty();// 메일 박스 초기화
             $('#mailpage-btn').empty();
             let data_temp = await getDocs(collection(db, "mailBox"));//데이터 받아옴
-            console.log(data_temp);
             const records = data_temp.docs.map((doc_temp) => doc_temp.data());
-            console.log(records);
             let i_temp = 0; // 인덱스 용도 
             let i_temp_2 = 0; // 인덱스 용도_2
             mailpage_index = 0; // 초기화 용도
@@ -106,10 +106,14 @@
 
             btn_maker();
 
+            data_temp.forEach((doc) => {
+                console.log(doc.id);
+            });
+
             if(records.length > 0)
             { 
                 records.forEach(data => 
-                {
+                {   
                     if(!check_once)// 페이지에 생성 완료시 
                     {
                         if(i_temp < (mail_max + Number(mailpage_chuseindex)))// 현재 페이지 최대값//여기가 채팅창 찍어주는 로직입니다.
@@ -213,11 +217,13 @@
             margin-top: 10px;
             background-color: gray;
 
-            padding: 5px 0px 5px 0px;
+            padding: 10px 0px 10px 0px;
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
 
             display: flex;
+
+            font-weight: bold;
         }
 
         .mail-divName {
@@ -264,6 +270,7 @@
         .contBody {
             display: flex;
             padding: 20px 0 20px 0;
+            background-color: whitesmoke;
             border-bottom: 1px solid black;
         }
 
@@ -318,7 +325,7 @@
                     <label for="main-name">닉네임:</label>
                     <input id="mail-name" ></input>
                     <label for="main-password">비밀번호:</label>
-                    <input id="mail-value" maxlength="8" placeholder="최대 8자리"></input>
+                    <input id="mail-pw" maxlength="8" placeholder="최대 8자리"></input>
                     <label for="main-name">내용:</label>
                     <input id="mail-value" class="mail-style"></input>
                     <button id="mail-btn" class="mail-button">눌러주세요</button>
