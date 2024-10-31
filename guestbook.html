@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, addDoc, getDocs, deleteDoc, setDoc, query, orderBy, limit, Doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, setDoc, query, orderBy, limit, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -53,6 +53,17 @@
         
         // 방명록 저장하는 용도.
         $('#mail-btn').click(async function() {
+
+            if($.trim($('#mail-name').val()).empty == ""){
+                alert("닉네임은 필수 입력입니다.");
+                return;
+            }
+
+            if($.trim($('#mail-pw').val()).empty == ""){
+                alert("비밀번호는 필수 입력입니다.");
+                return;
+            }
+
             let name_temp = $('#mail-name').val();// 이름
             let value_temp = $('#mail-value').val();// 내용
             let pw_temp = $('#mail-pw').val();
@@ -68,15 +79,22 @@
                 'value':value_temp,
                 'time': time_temp,
                 'password': pw_temp,
+                'timestamp': new Date(),
                 }
                 
                 let aa = addDoc(collection(db,'mailBox'),mail_data);
-                console.log(aa);
                 alert('방명록 등록 완료');
                 load_first = true;
+
+                $('#mail-name').val("");// 이름
+                $('#mail-value').val("");// 내용
+                $('#mail-pw').val("");
                 mailData_reroad();
-            })     
-        })
+
+                
+            });     
+        });
+
         //page이동 버튼 생성된 버튼들이 가질 클릭 이벤트
         $(document).on('click','#mailpage',function(click_d) {
             mailpage_chuseindex = 0;
@@ -95,7 +113,7 @@
             load_first = false;
             $('#mail-maker').empty();// 메일 박스 초기화
             $('#mailpage-btn').empty();
-            let data_temp = await getDocs(collection(db, "mailBox"));//데이터 받아옴
+            let data_temp = await getDocs(query(collection(db, "mailBox")),orderBy("timestamp","desc"));//데이터 받아옴
             const records = data_temp.docs.map((doc_temp) => doc_temp.data());
             let i_temp = 0; // 인덱스 용도 
             let i_temp_2 = 0; // 인덱스 용도_2
@@ -109,8 +127,8 @@
             let cnt = 1;
 
             if(data_temp.size > 0){
-                data_temp.forEach((doc) => {
-                    let row = doc.data();
+                data_temp.forEach((data) => {
+                    let row = data.data();
                     if(!check_once)// 페이지에 생성 완료시 
                     {
                         if(i_temp < (mail_max + Number(mailpage_chuseindex)))// 현재 페이지 최대값//여기가 채팅창 찍어주는 로직입니다.
@@ -123,11 +141,14 @@
                                 let home_Html = `<div class="">
                                                     <div class="contBody">
                                                         <div class="mail-cont-divName">${get_data.name}</div>
-                                                        <div class="mail-cont-divCont">${get_data.value}</div>
+                                                        <div class="mail-cont-divCont" id="divCont">${get_data.value}</div>
                                                         <div class="mail-cont-divDate">${get_data.time}</div>
-                                                        <div class="mail-cont-divDel"><input id="chkPw${cnt}" maxlength="8" placeholder="비밀번호"><button id="mailDelBtn${cnt}" type="button">삭제</button>
-                                                        <div id="docPw${cnt}" >${get_data.password}</div>
-                                                        <div id="docId${cnt}" hidden>${doc.id}</div>
+                                                        <div class="mail-cont-divDel">
+                                                            <input id="chkPw${cnt}" maxlength="8" placeholder="비밀번호">
+                                                            <button id="mailUpdateBtn${cnt}" style="margin-left:5px;" type="button">수정</button>
+                                                            <button id="mailDelBtn${cnt}" style="margin-left:5px;" type="button">삭제</button>
+                                                        <div id="docPw${cnt}" hidden>${get_data.password}</div>
+                                                        <div id="docId${cnt}" hidden>${data.id}</div>
                                                         </div>
                                                     </div>
                                                 </div>`
@@ -136,11 +157,8 @@
 
                                 $("#mailDelBtn" + cnt).click(async function (event) {
 
-                                    let savePw = $('#'+event.currentTarget.id).next('div').text(); //저장한 비밀번호
-                                    let inputPw = $('#'+event.currentTarget.id).prev('input').val(); //입력한 비밀번호
-
-                                    console.log($('#'+event.currentTarget.id).next('div').text());
-                                    console.log($('#'+event.currentTarget.id).prev('input').val());
+                                    let savePw = $('#'+event.currentTarget.id).next().text(); //저장한 비밀번호
+                                    let inputPw = $('#'+event.currentTarget.id).prev().prev().val(); //입력한 비밀번호
 
                                     //비밀번호 입력 여부 체크
                                     if($.trim(inputPw) == ""){
@@ -149,8 +167,34 @@
                                         return;
                                     }
 
+                                    //비밀번호 체크 (저장 == 입력)
+                                    if(savePw != inputPw){
+                                        alert("잘못된 비밀번호 입니다.");
+                                        return;
+                                    }
+
+                                    let docId = $('#'+event.currentTarget.id).next('div').next('div').text();
+                                    await deleteDoc(doc(db, "mailBox",docId));
+
+                                    alert("삭제되었습니다.");
+                                    window.location.reload();
+                                });
+
+                                
+                                //수정
+                                $("#mailUpdateBtn" + cnt).click(async function (event) {
+                                    let savePw = $('#'+event.currentTarget.id).next().next().text(); //저장한 비밀번호
+                                    let inputPw = $('#'+event.currentTarget.id).prev().val(); //입력한 비밀번호
+                                    console.log($('#'+event.currentTarget.id).prev());
+                                    console.log($('#'+event.currentTarget.id).next());
                                     console.log(savePw);
                                     console.log(inputPw);
+                                    //비밀번호 입력 여부 체크
+                                    if($.trim(inputPw) == ""){
+                                        alert("비밀번호를 입력해주세요.");
+                                        $('#'+event.currentTarget.id).focus();
+                                        return;
+                                    }
 
                                     //비밀번호 체크 (저장 == 입력)
                                     if(savePw != inputPw){
@@ -158,10 +202,9 @@
                                         return;
                                     }
 
-                                    
-
-                                    let docId = $('#'+event.currentTarget.id).next('div').next('div').text();
-                                    deleteDoc(collection(db, "mailBox","38qnJgwNDIbKLgXGXysZ"));
+                                    let docId = $('#'+event.currentTarget.id).next('div').next('div').next('div').text();
+                                    // let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
+                                    $("#popup").css('display','flex').hide().fadeIn();
                                 });
 
                                 cnt++;
@@ -180,7 +223,6 @@
                     }
                     // 여긴 위에 두개의 if 문을 빠져나온뒤 각 index들을 증가해주기 위한 곳입니다. 
                     i_temp_2++;
-                    console.log(i_temp);
                     i_temp++;
                 });
             }else
@@ -262,7 +304,7 @@
         }
         
         .mail-divCont {
-            width: 45%;
+            width: 40%;
             padding-left: 20px;
         }
         
@@ -272,7 +314,7 @@
         }
 
         .mail-divDel {
-            width: 15%;
+            width: 20%;
             padding-left: 20px;
         }
 
@@ -282,7 +324,7 @@
         }
         
         .mail-cont-divCont {
-            width: 45%;
+            width: 40%;
             padding-left: 20px;
         }
         
@@ -292,7 +334,7 @@
         }
 
         .mail-cont-divDel {
-            width: 15%;
+            width: 20%;
             padding-left: 5px;
             display: flex;
         }
@@ -306,6 +348,14 @@
 
         .mail-cont-divDel > input {
             width: 90px;
+        }
+
+        .essential {
+            color: red;
+        }
+
+        .pagination {
+            margin: 20px 0 20px 0;
         }
     </style>
 </head>
@@ -352,9 +402,9 @@
         <div class="mailBox-main" >
             <div class="mailBox-style">
                 <div class="mainBox-input">
-                    <label for="main-name">닉네임:</label>
+                    <label for="main-name"><span class="essential">*</span>닉네임:</label>
                     <input id="mail-name" ></input>
-                    <label for="main-password">비밀번호:</label>
+                    <label for="main-password"><span class="essential">*</span>비밀번호:</label>
                     <input id="mail-pw" maxlength="8" placeholder="최대 8자리"></input>
                     <label for="main-name">내용:</label>
                     <input id="mail-value" class="mail-style"></input>
@@ -382,11 +432,37 @@
                         </div>
                     </div>
                 </div>
-                <div id="mailpage-btn">
+
+                <div id="mailpage-btn" class="pagination">
                 </div>
               </div>
         </div>
     </main>
   <!--Main layout-->
+
+    <div class="popupWrap" id="popup">
+        <div class="popup">
+            <div class="bodyTitlebox">
+                <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
+            </div>
+            <div class="bodyContent">
+                <div class="bodyContentBox2">
+                    <div class="detailLabel"><span>이름</span></div>
+                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
+                    <div class="detailLabel"><span>MBTI</span></div>
+                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
+                    <div class="detailLabel"><span>GitHub</span></div>
+                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
+                    <div class="detailLabel"><span>Blog</span></div>
+                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
+                    <div class="detailLabel"><span>목표</span></div>
+                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
+                    <div class="detailLabel"><span>각오</span></div>
+                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
