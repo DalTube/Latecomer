@@ -49,17 +49,17 @@
         let mailpage_index = 0; //메일 10개씩 체크해서 늘리기
         let mailpage_chuseindex = 0;//버튼 누르면 값 받아오기 
         let load_first = true;//첫 실행 체크용
-        const mail_max = 3; // 보여주는 메일 최대치 
+        const mail_max = 5; // 보여주는 메일 최대치 
         
         // 방명록 저장하는 용도.
         $('#mail-btn').click(async function() {
 
-            if($.trim($('#mail-name').val()).empty == ""){
+            if($.trim($('#mail-name').val()) == ""){
                 alert("닉네임은 필수 입력입니다.");
                 return;
             }
 
-            if($.trim($('#mail-pw').val()).empty == ""){
+            if($.trim($('#mail-pw').val()) == ""){
                 alert("비밀번호는 필수 입력입니다.");
                 return;
             }
@@ -112,7 +112,6 @@
             $('#mailpage-btn').empty();
             let data_temp = await getDocs(query(collection(db, "mailBox")),orderBy("timestamp","desc"));//데이터 받아옴
             const records = data_temp.docs.map((doc_temp) => doc_temp.data());
-            console.log(records);
             let i_temp = 0; // 인덱스 용도 
             let i_temp_2 = 0; // 인덱스 용도_2
             mailpage_index = 0; // 초기화 용도
@@ -213,16 +212,11 @@
                     } 
                     if(i_temp_2 >= mail_max)// 몇 페이지 있는지 체크하기 위한 로직입니다.
                     {
-                        console.log("예상_1");
-                        
                         mailpage_index++;
                         i_temp_2 = 0;
                         btn_maker();
                     }
                     // 여긴 위에 두개의 if 문을 빠져나온뒤 각 index들을 증가해주기 위한 곳입니다. 
-                    console.log("예상_2");
-                    console.log(i_temp_2);
-                    
                     i_temp_2++;
                     i_temp++;
                 });
@@ -472,7 +466,7 @@
                     <label for="main-name"><span class="essential">*</span>닉네임:</label>
                     <input id="mail-name" ></input>
                     <label for="main-password"><span class="essential">*</span>비밀번호:</label>
-                    <input id="mail-pw" maxlength="8" placeholder="최대 8자리"></input>
+                    <input id="mail-pw" type="password" maxlength="8" placeholder="최대 8자리"></input>
                     <label for="main-name">내용:</label>
                     <input id="mail-value" class="mail-style"></input>
                     <button id="mail-btn" class="mail-button">눌러주세요</button>
