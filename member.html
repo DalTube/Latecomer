@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, query, where, addDoc, getDocs, deleteDoc, setDoc, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { updateDoc,collection, query, where, addDoc, getDocs, deleteDoc, setDoc, doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -80,12 +80,13 @@
                     let row = doc.data();
                     console.log(doc.id);
                     $('#deleteBtn').val(doc.id);// 삭제 버튼한테 삭제할 id를 부여 합니다.
-                    $('#tName').text(row['name']);
-                    $('#tMbti').text(row['mbti']);
-                    $('#tGithub').text(row['gitHub']);
-                    $('#tBlog').text(row['blog']);
-                    $('#tObjective').text(row['objective']);
-                    $('#tDetermination').text(row['determination']);
+                    $('#changeBtn').val(doc.id);// 수정 버튼한테 삭제할 id를 부여 합니다.
+                    $('#tName').val(row['name']);
+                    $('#tMbti').val(row['mbti']);
+                    $('#tGithub').val(row['gitHub']);
+                    $('#tBlog').val(row['blog']);
+                    $('#tObjective').val(row['objective']);
+                    $('#tDetermination').val(row['determination']);
                     $('#tImg').attr('src', row['image']);
                 });     
             });
@@ -115,7 +116,7 @@
 
         //멤버 추가 팝업 닫기 
         $("#closeMemberBox").click(async function () {
-            $('#memberCard').toggle();
+            $('#addMemberBox').toggle();
         });
 
         //멤버 추가 팝업 등록
@@ -145,7 +146,7 @@
                 $('#image').focus();
                 return;
             }
-
+            
             //DB 저장
             let doc = {
                 'name': name,
@@ -176,6 +177,33 @@
                 console.log(delet_data_id);
                 await deleteDoc(doc(db, "member", delet_data_id));
                 alert("삭제하였습니다.");
+                window.location.reload()
+           }
+        });
+        //멤버 수정 버튼 
+        $("#changeBtn").click(async function () {
+           const delet_check = confirm("수정하시겠습니까?");
+           if(delet_check)
+           {
+                let name = $('#tName').val();;
+                let mbti = $('#tMbti').val();
+                let gitHub = $('#tGithub').val();
+                let blog = $('#tBlog').val();
+                let objective = $('#tObjective').val();
+                let determination = $('#tDetermination').val();
+
+                let delet_data_id = $('#changeBtn').val();// 부여한 id를 받아와서 삭제를 진행합니다.
+                console.log(delet_data_id);
+                await updateDoc(doc(db, "member", delet_data_id),
+                {
+                    'name': name,
+                    'mbti': mbti,
+                    'gitHub': gitHub,
+                    'blog': blog,
+                    'objective': objective,
+                    'determination': determination
+                });
+                alert("수정되었습니다.");
                 window.location.reload()
            }
         });
@@ -303,6 +331,13 @@
             top: 0;
             left: 0;
             margin-top: 10px;
+            margin-left: 10px;
+        }
+        .changeBtn{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin-bottom : 10px;
             margin-left: 10px;
         }
 
@@ -439,8 +474,9 @@
         <div class="popup">
             <div class="bodyTitlebox">
                 <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
-                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button><!-- 삭제 버튼 -->
+                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button><!-- 끄기 버튼 -->
                 <button value="1" type="button" class="btn-close deleteBtn" aria-label="Close" id="deleteBtn"></button><!-- 삭제 버튼 -->
+                <button value="1" type="button" class="changeBtn" aria-label="Close" id="changeBtn">수정</button><!-- 삭제 버튼 -->
             </div>
             
             <div class="bodyContent">
@@ -450,17 +486,17 @@
                 <div class="bodyContentBox2">
                     
                     <div class="detailLabel"><span>이름</span></div>
-                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tName" class="detailText"></input></div>
                     <div class="detailLabel"><span>MBTI</span></div>
-                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tMbti" class="detailText"></input></div>
                     <div class="detailLabel"><span>GitHub</span></div>
-                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tGithub" class="detailText"></input></div>
                     <div class="detailLabel"><span>Blog</span></div>
-                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tBlog" class="detailText"></input></div>
                     <div class="detailLabel"><span>목표</span></div>
-                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tObjective" class="detailText"></input></div>
                     <div class="detailLabel"><span>각오</span></div>
-                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
+                    <div class="spanDiv"><input id="tDetermination" class="detailText"></input></div>
                 </div>
             </div>
         </div>
