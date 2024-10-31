@@ -1,7 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Dongle&family=Gowun+Dodum&family=Nanum+Pen+Script&family=Rubik+Wet+Paint&family=Song+Myung&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Danfo&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap');
 .dongle-regular {
   font-family: 'Dongle', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.head_text {
+  font-size: 150px;
+  font-family: 'Nanum Pen Script', cursive;
   font-weight: 400;
   font-style: normal;
 }
