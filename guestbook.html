@@ -204,6 +204,7 @@
 
                                     let docId = $('#'+event.currentTarget.id).next('div').next('div').next('div').text();
                                     // let elem = $('#'+event.currentTarget.id).find('#memeberName').text();
+                                    $("#popDocId").val(docId);
                                     $("#popup").css('display','flex').hide().fadeIn();
                                 });
 
@@ -238,6 +239,15 @@
         $('#mailpage-btn').append(btn_html);
     }
 
+    $("#popupClose").click(async function (event) {
+        $("#popDocId").val("");
+        $("#popup").css('display','flex').hide().fadeOut();
+    }); 
+
+    $("#popupSave").click(async function (event) {
+        
+    });
+    
     </script>
     <style>
         .mailBox_main {
@@ -265,6 +275,13 @@
             width: 100px;
             margin: 5px 10px 5px 0;
         }
+
+        .popup-button {
+            height: 40px;
+            width: 80px;
+            margin: 10px 10px 5px 0;
+        }
+
         .mail-data {
             background-color: black;
             color: white;
@@ -357,6 +374,45 @@
         .pagination {
             margin: 20px 0 20px 0;
         }
+
+        .popupWrap{
+            background-color:rgba(0,0,0,.3); 
+            justify-content:center;
+            align-items:center;    
+            position:fixed;        
+            top:200px;
+            left:0;
+            right:0;
+            bottom:0;               
+            display:flex;
+            padding:15px; 
+            display:none;
+            z-index: 1000;
+        }
+        .popup{
+            width:300px;               
+            height: 150px;          
+            border-radius:10px;       
+            overflow:hidden;          
+            background-color:#fbfbfb; 
+            box-shadow: 5px 10px 10px 1px rgba(0,0,0,.3); 
+        }
+
+        .bodyContent {
+            margin: 20px 20px auto 20px;
+        }
+
+        .popInput {
+            width : 100%;
+            margin-top: 5px;
+        }
+
+        .buttonContent{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -442,24 +498,16 @@
 
     <div class="popupWrap" id="popup">
         <div class="popup">
-            <div class="bodyTitlebox">
-                <h1 class="bona-nova-sc-regular bodyTitle">Profile</h1>
-                <button type="button" class="btn-close closeBtn" aria-label="Close" id="closeBtn"></button>
-            </div>
             <div class="bodyContent">
-                <div class="bodyContentBox2">
-                    <div class="detailLabel"><span>이름</span></div>
-                    <div class="spanDiv"><span id="tName" class="detailText"></span></div>
-                    <div class="detailLabel"><span>MBTI</span></div>
-                    <div class="spanDiv"><span id="tMbti" class="detailText"></span></div>
-                    <div class="detailLabel"><span>GitHub</span></div>
-                    <div class="spanDiv"><span id="tGithub" class="detailText"></span></div>
-                    <div class="detailLabel"><span>Blog</span></div>
-                    <div class="spanDiv"><span id="tBlog" class="detailText"></span></div>
-                    <div class="detailLabel"><span>목표</span></div>
-                    <div class="spanDiv"><span id="tObjective" class="detailText"></span></div>
-                    <div class="detailLabel"><span>각오</span></div>
-                    <div class="spanDiv"><span id="tDetermination" class="detailText"></span></div>
+                <div class="bodyContentBox">
+                    <span style="font-size: bold;">내용</span><input id="mail-value" class="popInput"></input>
+                    <input type="text" value="" id="popDocId" hidden>
+                </div>
+                <div class="buttonBox">
+                    <div class="buttonContent">
+                        <button id="popupSave" class="popup-button">저장</button>
+                        <button id="popupClose" class="popup-button">닫기</button>
+                    </div>
                 </div>
             </div>
         </div>
