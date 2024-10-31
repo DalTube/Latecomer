@@ -90,8 +90,6 @@
                 $('#mail-value').val("");// 내용
                 $('#mail-pw').val("");
                 mailData_reroad();
-
-                
             });     
         });
 
@@ -99,7 +97,6 @@
         $(document).on('click','#mailpage',function(click_d) {
             mailpage_chuseindex = 0;
             mailpage_chuseindex = click_d.target.value;
-            console.log(mailpage_chuseindex);
             load_first = true;
             mailData_reroad();
         })
