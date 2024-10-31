@@ -22,7 +22,7 @@
         // Firebase SDK 라이브러리 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { collection, addDoc, getDocs, deleteDoc, setDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, setDoc, query, orderBy, limit, Doc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase 구성 정보 설정
         const firebaseConfig = {
@@ -106,34 +106,65 @@
 
             btn_maker();
 
-            data_temp.forEach((doc) => {
-                console.log(doc.id);
-            });
+            let cnt = 1;
 
-            if(records.length > 0)
-            { 
-                records.forEach(data => 
-                {   
+            if(data_temp.size > 0){
+                data_temp.forEach((doc) => {
+                    let row = doc.data();
                     if(!check_once)// 페이지에 생성 완료시 
                     {
                         if(i_temp < (mail_max + Number(mailpage_chuseindex)))// 현재 페이지 최대값//여기가 채팅창 찍어주는 로직입니다.
                         {
-                            console.log(mail_max + Number(mailpage_chuseindex));// 자바스크립트는 확실히 무엇인지 지정을 해줘야 하네요 아니면 문자열로 만들어요!
+                            //console.log(mail_max + Number(mailpage_chuseindex));// 자바스크립트는 확실히 무엇인지 지정을 해줘야 하네요 아니면 문자열로 만들어요!
                 
                             if(i_temp >= mailpage_chuseindex)// 현재 페이지 최소값
                             {
-                                let get_data = data;
+                                let get_data = row;
                                 let home_Html = `<div class="">
                                                     <div class="contBody">
-                                                        <div hidden>${data_temp.id}</div>
                                                         <div class="mail-cont-divName">${get_data.name}</div>
                                                         <div class="mail-cont-divCont">${get_data.value}</div>
                                                         <div class="mail-cont-divDate">${get_data.time}</div>
-                                                        <div class="mail-cont-divDel"><input id="mail-value" maxlength="8" placeholder="비밀번호"><button type="button">삭제</button></div>
+                                                        <div class="mail-cont-divDel"><input id="chkPw${cnt}" maxlength="8" placeholder="비밀번호"><button id="mailDelBtn${cnt}" type="button">삭제</button>
+                                                        <div id="docPw${cnt}" >${get_data.password}</div>
+                                                        <div id="docId${cnt}" hidden>${doc.id}</div>
+                                                        </div>
                                                     </div>
                                                 </div>`
                                 // `<p value="${data_temp.id}" class="mail-data">${get_data.name} : ㅣ닉네임ㅣ ${get_data.value} : ㅣ내용ㅣ ${get_data.time} : ㅣ시간ㅣ</p>`;
                                 $('#mail-maker').append(home_Html);
+
+                                $("#mailDelBtn" + cnt).click(async function (event) {
+
+                                    let savePw = $('#'+event.currentTarget.id).next('div').text(); //저장한 비밀번호
+                                    let inputPw = $('#'+event.currentTarget.id).prev('input').val(); //입력한 비밀번호
+
+                                    console.log($('#'+event.currentTarget.id).next('div').text());
+                                    console.log($('#'+event.currentTarget.id).prev('input').val());
+
+                                    //비밀번호 입력 여부 체크
+                                    if($.trim(inputPw) == ""){
+                                        alert("비밀번호를 입력해주세요.");
+                                        $('#'+event.currentTarget.id).focus();
+                                        return;
+                                    }
+
+                                    console.log(savePw);
+                                    console.log(inputPw);
+
+                                    //비밀번호 체크 (저장 == 입력)
+                                    if(savePw != inputPw){
+                                        alert("잘못된 비밀번호 입니다.");
+                                        return;
+                                    }
+
+                                    
+
+                                    let docId = $('#'+event.currentTarget.id).next('div').next('div').text();
+                                    deleteDoc(collection(db, "mailBox","38qnJgwNDIbKLgXGXysZ"));
+                                });
+
+                                cnt++;
                             }
                         }
                         else //채팅 최대치 찍어주고 넘어가기 위한 로직입니다.
@@ -151,9 +182,8 @@
                     i_temp_2++;
                     console.log(i_temp);
                     i_temp++;
-                });  
-            }
-            else
+                });
+            }else
             {
                 alert('방명록이 비어있습니다.');
             }  
